@@ -1,19 +1,18 @@
 use wasm_bindgen::prelude::*;
-use web_sys::console;
+use rayon::prelude::*;
 
 #[wasm_bindgen]
 pub fn matrix_multiply(a: &[f64], b: &[f64], n: usize) -> Vec<f64> {
-    console::log_1(&"matrix_multiply called!".into());
-    
     let mut result = vec![0.0; n * n];
-    
-    for i in 0..n {
-        for j in 0..n {
-            for k in 0..n {
-                result[i * n + j] += a[i * n + k] * b[k * n + j];
+
+    result.par_chunks_mut(n).enumerate().for_each(|(i, row)| {
+        for k in 0..n {
+            let a_ik = a[i * n + k];
+            for j in 0..n {
+                row[j] += a_ik * b[k * n + j];
             }
         }
-    }
-    
+    });
+
     result
 }
